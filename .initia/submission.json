@@ -1,0 +1,28 @@
+{
+  "name": "YieldRouter",
+  "description": "DeFi yield aggregator and router on Initia. Automatically finds and routes assets to the highest-yielding opportunities across all Initia protocols.",
+  "track": "DeFi",
+  "team": [
+    {
+      "name": "Farouk Allani",
+      "github": "farouk-allani",
+      "role": "Builder"
+    }
+  ],
+  "repository": "https://github.com/farouk-allani/YieldRouter",
+  "demoVideo": "",
+  "chainId": "",
+  "deployedContracts": [],
+  "features": [
+    "Auto-routing to best yield protocols",
+    "Non-custodial smart contract architecture",
+    "Real-time APY scanning across Initia ecosystem",
+    "Auto-rebalancing when better opportunities appear",
+    "Risk scoring for every protocol"
+  ],
+  "initiaNativeFeatures": [
+    "InterwovenKit integration for wallet connection",
+    "Interwoven Bridge for cross-chain deposits",
+    "Initia Usernames (.init) support"
+  ]
+}

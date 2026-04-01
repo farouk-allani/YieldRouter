@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YieldRouter 🐍
+
+**Maximize Your DeFi Yield on Initia**
+
+YieldRouter automatically finds and routes your assets to the highest-yielding DeFi opportunities across the Initia ecosystem. One deposit. Optimized returns. Zero hassle.
+
+## 🏆 INITIATE: The Initia Hackathon (Season 1)
+
+**Track:** DeFi
+
+**Built for:** The Initia ecosystem — maximizing yield capture for users while leveraging Initia's interwoven architecture.
+
+## What is YieldRouter?
+
+YieldRouter is a DeFi yield aggregator that:
+
+- **Scans** every lending, staking, LP, and farming protocol on Initia in real-time
+- **Routes** your deposited assets to the optimal yield strategies
+- **Rebalances** automatically when better opportunities appear
+- **Protects** your assets with non-custodial, audited smart contracts
+
+## Features
+
+### Core Protocol
+- 🔄 **Smart Routing Engine** — Real-time APY scanning across all Initia protocols
+- 📊 **Risk Scoring** — Transparent risk ratings for every protocol
+- 🔐 **Non-Custodial** — Your keys, your crypto. Always.
+- ⚡ **Auto-Rebalancing** — Optimizes your position as yields change
+
+### Initia Integration
+- 🌉 **Interwoven Bridge** — Deposit from any chain seamlessly
+- 👛 **InterwovenKit** — Native wallet connection and transaction handling
+- 🏷️ **Initia Usernames (.init)** — Human-readable addresses
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 15 + TypeScript + Tailwind CSS |
+| Smart Contracts | Solidity (EVM) on Initia appchain |
+| Wallet | InterwovenKit React |
+| Chain | Initia EVM rollup |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+```bash
+git clone https://github.com/farouk-allani/YieldRouter.git
+cd YieldRouter
+npm install
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/              # Next.js app router
+├── components/       # UI components
+│   ├── Header.tsx    # Navigation
+│   ├── Hero.tsx      # Landing hero
+│   ├── HowItWorks.tsx
+│   ├── Yields.tsx    # Protocol comparison
+│   ├── Security.tsx
+│   ├── FAQ.tsx
+│   ├── CTA.tsx
+│   └── Footer.tsx
+├── lib/              # Utilities and configs
+└── contracts/        # Solidity contracts (coming soon)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Design System
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+YieldRouter uses a bold, high-contrast design system inspired by modern DeFi UX:
 
-## Deploy on Vercel
+- **Primary Dark:** `#0f172a`
+- **Accent Green:** `#b6ff5c` (highlights, CTAs)
+- **Accent Purple:** `#a183ff` (secondary actions)
+- **Background:** `#f8f8f5`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Submission Requirements
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [x] `.initia/submission.json`
+- [x] `README.md`
+- [ ] Demo video (in progress)
+- [ ] Deployed appchain with chain ID
+- [ ] InterwovenKit integration
+- [ ] At least one Initia-native feature
+
+## License
+
+MIT
