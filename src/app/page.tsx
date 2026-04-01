@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
+import RevenueDashboard from "@/components/RevenueDashboard";
 import Yields from "@/components/Yields";
 import Security from "@/components/Security";
 import FAQ from "@/components/FAQ";
@@ -14,6 +15,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <HowItWorks />
+        <RevenueDashboard />
         <Yields />
         <Security />
         <FAQ />
