@@ -1,21 +1,27 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback } from "react";
 
 // Mock InterwovenKit context for Vercel preview
 // Real integration uses @initia/interwovenkit-react on Initia testnet
 interface WalletContextType {
-  connected: boolean;
+  isConnected: boolean;
   address: string | null;
-  connect: () => void;
+  username: string | null;
+  openConnect: () => void;
+  openWallet: () => void;
   disconnect: () => void;
+  submitTxBlock: (msgs: unknown[]) => Promise<{ txhash: string }>;
 }
 
 const WalletContext = createContext<WalletContextType>({
-  connected: false,
+  isConnected: false,
   address: null,
-  connect: () => {},
+  username: null,
+  openConnect: () => {},
+  openWallet: () => {},
   disconnect: () => {},
+  submitTxBlock: async () => ({ txhash: "" }),
 });
 
 export function useInterwovenKit() {
@@ -24,15 +30,23 @@ export function useInterwovenKit() {
 
 export default function InterwovenProvider({ children }: { children: ReactNode }) {
   const [connected, setConnected] = useState(false);
-  const [address] = useState("init1abc...xyz");
+
+  const submitTxBlock = useCallback(async (msgs: unknown[]) => {
+    // Mock: simulate tx delay
+    await new Promise((r) => setTimeout(r, 1500));
+    return { txhash: "0x" + Math.random().toString(16).slice(2, 18) };
+  }, []);
 
   return (
     <WalletContext.Provider
       value={{
-        connected,
-        address: connected ? address : null,
-        connect: () => setConnected(true),
+        isConnected: connected,
+        address: connected ? "init1abc...xyz" : null,
+        username: connected ? "farouk.init" : null,
+        openConnect: () => setConnected(true),
+        openWallet: () => setConnected(true),
         disconnect: () => setConnected(false),
+        submitTxBlock,
       }}
     >
       {children}
