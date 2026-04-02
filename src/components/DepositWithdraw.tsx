@@ -15,11 +15,38 @@ interface StreamPreview {
   icon: string;
 }
 
+const StreamIcon = ({ name, className }: { name: string; className?: string }) => {
+  const icons: Record<string, React.ReactNode> = {
+    vault: (
+      <svg className={className} viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+        <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+      </svg>
+    ),
+    staking: (
+      <svg className={className} viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+        <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" />
+      </svg>
+    ),
+    swap: (
+      <svg className={className} viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+        <path fillRule="evenodd" d="M13.2 2.24a.75.75 0 00.04 1.06l2.1 1.95H6.75a.75.75 0 000 1.5h8.59l-2.1 1.95a.75.75 0 101.02 1.1l3.5-3.25a.75.75 0 000-1.1l-3.5-3.25a.75.75 0 00-1.06.04zm-6.4 8a.75.75 0 00-1.06-.04l-3.5 3.25a.75.75 0 000 1.1l3.5 3.25a.75.75 0 001.02-1.1l-2.1-1.95h8.59a.75.75 0 000-1.5H4.66l2.1-1.95a.75.75 0 00.04-1.06z" clipRule="evenodd" />
+      </svg>
+    ),
+    revenue: (
+      <svg className={className} viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+        <path d="M10.75 10.818a3.75 3.75 0 01-1.908-.072.75.75 0 01.458-1.425 2.25 2.25 0 001.138.306 2.25 2.25 0 002.108-1.49.75.75 0 011.368.576 3.75 3.75 0 01-3.164 2.106z" />
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
+      </svg>
+    ),
+  };
+  return icons[name] || null;
+};
+
 const REVENUE_STREAMS: StreamPreview[] = [
-  { name: "vault-yield", label: "Vault Yield", apy: 12.4, color: "text-emerald-600", icon: "🏦" },
-  { name: "staking", label: "Staking Rewards", apy: 6.8, color: "text-violet-600", icon: "📊" },
-  { name: "lp-fees", label: "LP Trading Fees", apy: 4.2, color: "text-blue-600", icon: "🔄" },
-  { name: "revenue-share", label: "Revenue Share", apy: 2.4, color: "text-amber-600", icon: "💰" },
+  { name: "vault-yield", label: "Vault Yield", apy: 12.4, color: "text-emerald-600", icon: "vault" },
+  { name: "staking", label: "Staking Rewards", apy: 6.8, color: "text-violet-600", icon: "staking" },
+  { name: "lp-fees", label: "LP Trading Fees", apy: 4.2, color: "text-blue-600", icon: "swap" },
+  { name: "revenue-share", label: "Revenue Share", apy: 2.4, color: "text-amber-600", icon: "revenue" },
 ];
 
 const TOTAL_APY = REVENUE_STREAMS.reduce((s, r) => s + r.apy, 0);
@@ -246,7 +273,7 @@ export default function DepositWithdraw() {
                             className="flex items-center justify-between"
                           >
                             <div className="flex items-center gap-2">
-                              <span className="text-base">{stream.icon}</span>
+                              <StreamIcon name={stream.icon} className="w-4 h-4" />
                               <span className="text-[13px] font-semibold text-neutral-600">
                                 {stream.label}
                               </span>
@@ -319,7 +346,7 @@ export default function DepositWithdraw() {
                 {/* Auto-sign session note */}
                 {tab === "deposit" && (
                   <p className="text-[11px] text-neutral-400 text-center mt-3 font-medium">
-                    🔓 Auto-sign enabled — no repeated wallet popups for deposits and withdrawals
+                    Auto-sign enabled — no repeated wallet popups for deposits and withdrawals
                   </p>
                 )}
 
@@ -327,7 +354,7 @@ export default function DepositWithdraw() {
                 {txHash && (
                   <div className="mt-4 bg-emerald-50 border border-emerald-200 rounded-[12px] p-4">
                     <p className="text-[13px] font-bold text-emerald-700">
-                      ✅ Transaction submitted!
+                      Transaction submitted!
                     </p>
                     <p className="text-[11px] text-emerald-600 mt-1 font-mono">
                       {txHash}
@@ -417,7 +444,7 @@ export default function DepositWithdraw() {
               <div className="space-y-3">
                 {REVENUE_STREAMS.map((stream) => (
                   <div key={stream.name} className="flex items-center gap-3">
-                    <span className="text-lg">{stream.icon}</span>
+                    <StreamIcon name={stream.icon} className="w-5 h-5" />
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-[13px] font-semibold text-neutral-700">

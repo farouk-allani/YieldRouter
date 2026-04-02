@@ -64,7 +64,7 @@ export default function Footer() {
             </h4>
             <div className="flex flex-col gap-3">
               <a
-                href="#"
+                href="/app"
                 className="text-neutral-400 text-[14px] font-medium hover:text-white transition-colors"
               >
                 App
@@ -151,7 +151,7 @@ export default function Footer() {
             &copy; 2026 YieldRouter. Built on Initia.
           </span>
           <span className="text-neutral-500 text-[12px] font-bold">
-            Made with 🐍 by YieldRouter Team
+            Built for Initia
           </span>
         </div>
       </div>

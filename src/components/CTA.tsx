@@ -22,7 +22,7 @@ export default function CTA() {
 
             <div className="flex flex-wrap justify-center gap-4 mt-10">
               <a
-                href="#app"
+                href="/app"
                 className="bg-accent-green text-primary-dark px-10 py-5 rounded-[44px] font-black text-[18px] uppercase tracking-wide hover:bg-[#a5ed4b] transition-colors"
               >
                 Launch App

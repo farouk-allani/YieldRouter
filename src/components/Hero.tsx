@@ -36,10 +36,10 @@ export default function Hero() {
             {/* CTAs */}
             <div className="flex flex-wrap gap-4 mt-2">
               <a
-                href="#app"
+                href="/app"
                 className="bg-accent-green text-primary-dark px-8 py-4 rounded-[44px] font-black text-[16px] uppercase tracking-wide hover:bg-[#a5ed4b] transition-colors"
               >
-                Start Earning
+                Launch App
               </a>
               <a
                 href="#how-it-works"
@@ -165,7 +165,7 @@ export default function Hero() {
                 </div>
 
                 <a
-                  href="#app"
+                  href="/app"
                   className="bg-accent-green text-primary-dark px-8 py-4 rounded-[44px] font-black text-[16px] uppercase tracking-wide text-center hover:bg-[#a5ed4b] transition-colors"
                 >
                   Deposit Now

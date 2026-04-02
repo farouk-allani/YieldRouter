@@ -51,6 +51,12 @@ export default function Header() {
           >
             FAQ
           </a>
+          <a
+            href="/app"
+            className="text-sm font-bold text-accent-green hover:text-primary-dark transition-colors"
+          >
+            Launch App ↗
+          </a>
         </nav>
 
         {/* CTA / Wallet */}
@@ -115,6 +121,9 @@ export default function Header() {
             </a>
             <a href="#faq" className="font-semibold text-neutral-600">
               FAQ
+            </a>
+            <a href="/app" className="font-black text-accent-green">
+              Launch App ↗
             </a>
             <hr className="border-neutral-200" />
             {isConnected ? (
