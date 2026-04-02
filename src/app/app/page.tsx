@@ -423,8 +423,6 @@ function BridgePanel({ onClose }: { onClose: () => void }) {
               <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
               <span>Waiting for confirmations... ~30s</span>
             </div>
-            {/* Auto-advance after 3 seconds */}
-            {setTimeout(() => setBridgeStep("done"), 3000) && null}
           </div>
         )}
 

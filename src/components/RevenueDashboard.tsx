@@ -76,6 +76,150 @@ const REVENUE_STREAMS: RevenueStream[] = [
   },
 ];
 
+// ─── Animated Flywheel Visual ─────────────────────────────────────────
+
+function AnimatedFlywheel({ totalApy }: { totalApy: number }) {
+  const [activeStream, setActiveStream] = useState<number | null>(null);
+
+  const streams = [
+    { label: "Vault", apy: 12.4, color: "#10b981", angle: -90 },
+    { label: "Staking", apy: 6.8, color: "#8b5cf6", angle: 0 },
+    { label: "LP Fees", apy: 4.2, color: "#3b82f6", angle: 90 },
+    { label: "Revenue", apy: 2.4, color: "#f59e0b", angle: 180 },
+  ];
+
+  return (
+    <div className="w-[240px] h-[240px] relative mx-auto md:mx-0">
+      {/* Outer rotating ring */}
+      <div className="absolute inset-0 rounded-full border-2 border-dashed border-neutral-300 animate-spin-slow" />
+
+      {/* Pulsing glow */}
+      <div className="absolute inset-6 rounded-full bg-accent-green/5 animate-pulse" />
+
+      {/* Center content */}
+      <div className="absolute inset-8 rounded-full bg-white border border-neutral-200 flex flex-col items-center justify-center shadow-lg z-10">
+        <span className="text-[36px] font-black text-primary-dark leading-[1]">
+          {totalApy.toFixed(1)}%
+        </span>
+        <span className="text-[10px] font-bold text-neutral-400 uppercase mt-1">
+          Combined APY
+        </span>
+        <div className="flex items-center gap-1 mt-2">
+          <div className="w-1.5 h-1.5 bg-accent-green rounded-full animate-pulse" />
+          <span className="text-[9px] font-bold text-neutral-400 uppercase">
+            Live
+          </span>
+        </div>
+      </div>
+
+      {/* Orbital stream nodes */}
+      {streams.map((stream, i) => {
+        const angle = (stream.angle * Math.PI) / 180;
+        const radius = 105;
+        const x = 120 + radius * Math.cos(angle);
+        const y = 120 + radius * Math.sin(angle);
+        const isActive = activeStream === i;
+
+        return (
+          <button
+            key={i}
+            onMouseEnter={() => setActiveStream(i)}
+            onMouseLeave={() => setActiveStream(null)}
+            className="absolute z-20 transition-all duration-300 group"
+            style={{
+              left: `${x - 32}px`,
+              top: `${y - 32}px`,
+            }}
+          >
+            <div
+              className={`w-16 h-16 rounded-full flex flex-col items-center justify-center border-2 shadow-md transition-all duration-300 ${
+                isActive ? "scale-110 shadow-lg" : "hover:scale-105"
+              }`}
+              style={{
+                backgroundColor: isActive ? stream.color : "white",
+                borderColor: stream.color,
+              }}
+            >
+              <span
+                className={`text-[13px] font-black leading-[1] ${
+                  isActive ? "text-white" : "text-primary-dark"
+                }`}
+              >
+                {stream.apy}%
+              </span>
+              <span
+                className={`text-[8px] font-bold uppercase ${
+                  isActive ? "text-white/80" : "text-neutral-400"
+                }`}
+              >
+                {stream.label}
+              </span>
+            </div>
+
+            {/* Connection line to center */}
+            <svg
+              className="absolute pointer-events-none"
+              style={{
+                width: `${Math.abs(120 - x) + 20}px`,
+                height: `${Math.abs(120 - y) + 20}px`,
+                left: x < 120 ? `${120 - x}px` : "0px",
+                top: y < 120 ? `${120 - y}px` : "0px",
+              }}
+            >
+              <line
+                x1={x < 120 ? Math.abs(120 - x) + 20 : 20}
+                y1={y < 120 ? Math.abs(120 - y) + 20 : 20}
+                x2={x < 120 ? 20 : Math.abs(120 - x) + 20}
+                y2={y < 120 ? 20 : Math.abs(120 - y) + 20}
+                stroke={stream.color}
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                opacity={isActive ? 0.8 : 0.3}
+                className="transition-opacity duration-300"
+              />
+            </svg>
+          </button>
+        );
+      })}
+
+      {/* Flow arrows (decorative) */}
+      <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 240 240">
+        <defs>
+          <marker
+            id="arrowhead"
+            markerWidth="6"
+            markerHeight="4"
+            refX="3"
+            refY="2"
+            orient="auto"
+          >
+            <polygon points="0 0, 6 2, 0 4" fill="#b6ff5c" opacity="0.5" />
+          </marker>
+        </defs>
+        {/* Circular flow arrow */}
+        <path
+          d="M 120 30 A 90 90 0 0 1 210 120"
+          fill="none"
+          stroke="#b6ff5c"
+          strokeWidth="1"
+          strokeDasharray="6 4"
+          opacity="0.3"
+          markerEnd="url(#arrowhead)"
+        />
+        <path
+          d="M 210 120 A 90 90 0 0 1 120 210"
+          fill="none"
+          stroke="#a183ff"
+          strokeWidth="1"
+          strokeDasharray="6 4"
+          opacity="0.3"
+          markerEnd="url(#arrowhead)"
+        />
+      </svg>
+    </div>
+  );
+}
+
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export default function RevenueDashboard() {
@@ -150,7 +294,7 @@ export default function RevenueDashboard() {
           {REVENUE_STREAMS.map((stream, index) => (
             <div
               key={stream.name}
-              className={`rounded-[20px] border p-6 hover:shadow-lg transition-all group ${stream.bgColor}`}
+              className={`rounded-[20px] border p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-default ${stream.bgColor}`}
             >
               {/* Icon + Index */}
               <div className="flex items-center justify-between mb-4">
@@ -206,37 +350,9 @@ export default function RevenueDashboard() {
 
         {/* Flywheel Explanation */}
         <div className="mt-12 bg-neutral-50 rounded-[24px] border border-neutral-200 p-8 sm:p-10">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            {/* Visual */}
-            <div className="flex-shrink-0 w-[200px] h-[200px] relative">
-              <div className="absolute inset-0 rounded-full border-2 border-dashed border-neutral-300 animate-spin-slow" />
-              <div className="absolute inset-4 rounded-full bg-accent-green/10 flex items-center justify-center">
-                <div className="text-center">
-                  <span className="text-[32px] font-black text-primary-dark block">
-                    {totalApy.toFixed(1)}%
-                  </span>
-                  <span className="text-[11px] font-bold text-neutral-500 uppercase">
-                    Combined APY
-                  </span>
-                </div>
-              </div>
-              {/* Orbital dots */}
-              {REVENUE_STREAMS.map((_, i) => {
-                const angle = (i * 90 - 90) * (Math.PI / 180);
-                const x = 100 + 90 * Math.cos(angle);
-                const y = 100 + 90 * Math.sin(angle);
-                return (
-                  <div
-                    key={i}
-                    className={`absolute w-4 h-4 rounded-full ${REVENUE_STREAMS[i].bgColor} border-2`}
-                    style={{
-                      left: `${x - 8}px`,
-                      top: `${y - 8}px`,
-                    }}
-                  />
-                );
-              })}
-            </div>
+          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+            {/* Animated Flywheel Visual */}
+            <AnimatedFlywheel totalApy={totalApy} />
 
             {/* Text */}
             <div className="flex-1">

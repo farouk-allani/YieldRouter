@@ -1,4 +1,104 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+
+// ─── Animated Counter Hook ────────────────────────────────────────────
+
+function useAnimatedCounter(target: number, duration = 2000, decimals = 1) {
+  const [value, setValue] = useState(0);
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started) {
+          setStarted(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [started]);
+
+  useEffect(() => {
+    if (!started) return;
+    const startTime = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(target * eased);
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [started, target, duration]);
+
+  return { value: value.toFixed(decimals), ref };
+}
+
+// ─── Live APY Ticker ─────────────────────────────────────────────────
+
+function LiveApyTicker() {
+  const [apys, setApys] = useState([
+    { protocol: "Initia Lending", apy: 24.8, delta: 0 },
+    { protocol: "Interwoven DEX", apy: 19.3, delta: 0 },
+    { protocol: "Enshrined LP", apy: 14.5, delta: 0 },
+    { protocol: "Stable Pool", apy: 8.7, delta: 0 },
+  ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setApys((prev) =>
+        prev.map((p) => {
+          const drift = (Math.random() - 0.48) * 0.4;
+          const newApy = Math.max(1, p.apy + drift);
+          return {
+            ...p,
+            apy: Math.round(newApy * 10) / 10,
+            delta: Math.round(drift * 10) / 10,
+          };
+        })
+      );
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      {apys.map((item, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-[10px] px-3 py-2 whitespace-nowrap flex-shrink-0"
+        >
+          <div className="w-1.5 h-1.5 bg-accent-green rounded-full animate-pulse" />
+          <span className="text-[11px] font-bold text-neutral-300">
+            {item.protocol}
+          </span>
+          <span className="text-[13px] font-black text-accent-green">
+            {item.apy}%
+          </span>
+          <span
+            className={`text-[10px] font-bold ${
+              item.delta >= 0 ? "text-emerald-400" : "text-red-400"
+            }`}
+          >
+            {item.delta >= 0 ? "↑" : "↓"}
+            {Math.abs(item.delta)}%
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Hero() {
+  const bestApy = useAnimatedCounter(25.8, 2500, 1);
+  const tvlRouted = useAnimatedCounter(2.4, 2000, 1);
+  const userCount = useAnimatedCounter(1847, 2200, 0);
+
   return (
     <section className="relative overflow-hidden">
       {/* Decorative blobs */}
@@ -37,13 +137,13 @@ export default function Hero() {
             <div className="flex flex-wrap gap-4 mt-2">
               <a
                 href="/app"
-                className="bg-accent-green text-primary-dark px-8 py-4 rounded-[44px] font-black text-[16px] uppercase tracking-wide hover:bg-[#a5ed4b] transition-colors"
+                className="bg-accent-green text-primary-dark px-8 py-4 rounded-[44px] font-black text-[16px] uppercase tracking-wide hover:bg-[#a5ed4b] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
                 Launch App
               </a>
               <a
                 href="#how-it-works"
-                className="border-2 border-primary-dark text-primary-dark px-8 py-4 rounded-[44px] font-black text-[16px] uppercase tracking-wide hover:bg-primary-dark hover:text-white transition-colors"
+                className="border-2 border-primary-dark text-primary-dark px-8 py-4 rounded-[44px] font-black text-[16px] uppercase tracking-wide hover:bg-primary-dark hover:text-white transition-colors duration-200"
               >
                 How It Works
               </a>
@@ -94,6 +194,26 @@ export default function Hero() {
                 Audited contracts
               </span>
             </div>
+
+            {/* Live APY Ticker */}
+            <div className="mt-4 bg-primary-dark rounded-[16px] p-4 relative overflow-hidden">
+              <div
+                className="absolute inset-0 pointer-events-none opacity-10"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(90deg, rgba(182, 255, 92, 0.3) 0%, rgba(182, 255, 92, 0) 100%)",
+                }}
+              />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 bg-accent-green rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black uppercase text-neutral-400 tracking-wider">
+                    Live Protocol Yields
+                  </span>
+                </div>
+                <LiveApyTicker />
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Yield Card Visual */}
@@ -108,37 +228,51 @@ export default function Hero() {
                 }}
               />
 
+              {/* Rotating ring decoration */}
+              <div className="absolute -top-20 -right-20 w-[200px] h-[200px] border border-accent-green/10 rounded-full animate-spin-slow pointer-events-none" />
+              <div
+                className="absolute -bottom-16 -left-16 w-[160px] h-[160px] border border-accent-purple/10 rounded-full animate-spin-slow pointer-events-none"
+                style={{ animationDirection: "reverse", animationDuration: "25s" }}
+              />
+
               <div className="relative z-10 flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-400 text-[14px] font-bold uppercase">
                     Current Best Yield
                   </span>
-                  <span className="bg-accent-green/20 text-accent-green px-3 py-1 rounded-full text-[12px] font-black uppercase">
+                  <span className="bg-accent-green/20 text-accent-green px-3 py-1 rounded-full text-[12px] font-black uppercase flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-accent-green rounded-full animate-pulse" />
                     Live
                   </span>
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <span className="text-[48px] sm:text-[56px] font-black text-accent-green leading-[1]">
-                    24.8%
+                  <span
+                    ref={bestApy.ref}
+                    className="text-[48px] sm:text-[56px] font-black text-accent-green leading-[1]"
+                  >
+                    {bestApy.value}%
                   </span>
                   <span className="text-neutral-400 text-[14px] font-bold">
-                    APY — Initia Lending Pool
+                    Combined APY — 4 Revenue Streams
                   </span>
                 </div>
 
                 <hr className="border-dark-border border-dashed" />
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-dark-surface rounded-[16px] p-4">
+                  <div className="bg-dark-surface rounded-[16px] p-4 hover:bg-dark-border transition-colors duration-200">
                     <span className="text-neutral-400 text-[12px] font-bold uppercase">
                       TVL Routed
                     </span>
-                    <span className="text-white text-[20px] font-black block mt-1">
-                      $2.4M
+                    <span
+                      ref={tvlRouted.ref}
+                      className="text-white text-[20px] font-black block mt-1"
+                    >
+                      ${tvlRouted.value}M
                     </span>
                   </div>
-                  <div className="bg-dark-surface rounded-[16px] p-4">
+                  <div className="bg-dark-surface rounded-[16px] p-4 hover:bg-dark-border transition-colors duration-200">
                     <span className="text-neutral-400 text-[12px] font-bold uppercase">
                       Protocols
                     </span>
@@ -146,15 +280,18 @@ export default function Hero() {
                       12
                     </span>
                   </div>
-                  <div className="bg-dark-surface rounded-[16px] p-4">
+                  <div className="bg-dark-surface rounded-[16px] p-4 hover:bg-dark-border transition-colors duration-200">
                     <span className="text-neutral-400 text-[12px] font-bold uppercase">
                       Users
                     </span>
-                    <span className="text-white text-[20px] font-black block mt-1">
-                      1,847
+                    <span
+                      ref={userCount.ref}
+                      className="text-white text-[20px] font-black block mt-1"
+                    >
+                      {Number(userCount.value).toLocaleString()}
                     </span>
                   </div>
-                  <div className="bg-dark-surface rounded-[16px] p-4">
+                  <div className="bg-dark-surface rounded-[16px] p-4 hover:bg-dark-border transition-colors duration-200">
                     <span className="text-neutral-400 text-[12px] font-bold uppercase">
                       Avg APY
                     </span>
@@ -166,7 +303,7 @@ export default function Hero() {
 
                 <a
                   href="/app"
-                  className="bg-accent-green text-primary-dark px-8 py-4 rounded-[44px] font-black text-[16px] uppercase tracking-wide text-center hover:bg-[#a5ed4b] transition-colors"
+                  className="bg-accent-green text-primary-dark px-8 py-4 rounded-[44px] font-black text-[16px] uppercase tracking-wide text-center hover:bg-[#a5ed4b] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 >
                   Deposit Now
                 </a>
