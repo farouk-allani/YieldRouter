@@ -1,9 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useInterwovenKit } from "@initia/interwovenkit-react";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isConnected, username, address, openConnect, openWallet, disconnect } =
+    useInterwovenKit();
+
+  const shortAddress = address
+    ? `${address.slice(0, 8)}...${address.slice(-4)}`
+    : "";
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-[6px] bg-[rgba(255,255,255,0.8)] border-b border-neutral-200">
@@ -46,20 +53,34 @@ export default function Header() {
           </a>
         </nav>
 
-        {/* CTA */}
+        {/* CTA / Wallet */}
         <div className="hidden md:flex items-center gap-4">
-          <a
-            href="#"
-            className="text-sm font-bold text-primary-dark hover:text-accent-purple transition-colors"
-          >
-            Connect Wallet
-          </a>
-          <a
-            href="#app"
-            className="bg-accent-green text-primary-dark px-6 py-3 rounded-[44px] font-black text-[14px] uppercase tracking-wide hover:bg-[#a5ed4b] transition-colors"
-          >
-            Launch App
-          </a>
+          {isConnected ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={openWallet}
+                className="flex items-center gap-2 bg-neutral-100 border border-neutral-200 rounded-[12px] px-4 py-2.5 hover:bg-neutral-200 transition-colors"
+              >
+                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                <span className="text-sm font-bold text-primary-dark">
+                  {username || shortAddress}
+                </span>
+              </button>
+              <button
+                onClick={disconnect}
+                className="text-sm font-bold text-neutral-400 hover:text-red-500 transition-colors"
+              >
+                Disconnect
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={openConnect}
+              className="bg-accent-green text-primary-dark px-6 py-3 rounded-[44px] font-black text-[14px] uppercase tracking-wide hover:bg-[#a5ed4b] transition-colors"
+            >
+              Connect Wallet
+            </button>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -96,12 +117,32 @@ export default function Header() {
               FAQ
             </a>
             <hr className="border-neutral-200" />
-            <a
-              href="#app"
-              className="bg-accent-green text-primary-dark px-6 py-3 rounded-[44px] font-black text-[14px] uppercase text-center"
-            >
-              Launch App
-            </a>
+            {isConnected ? (
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={openWallet}
+                  className="flex items-center gap-2 bg-neutral-100 rounded-[12px] px-4 py-3 justify-center"
+                >
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <span className="text-sm font-bold">
+                    {username || shortAddress}
+                  </span>
+                </button>
+                <button
+                  onClick={disconnect}
+                  className="text-sm font-bold text-red-500 text-center"
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={openConnect}
+                className="bg-accent-green text-primary-dark px-6 py-3 rounded-[44px] font-black text-[14px] uppercase text-center"
+              >
+                Connect Wallet
+              </button>
+            )}
           </div>
         </div>
       )}

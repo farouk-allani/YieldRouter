@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
 import RevenueDashboard from "@/components/RevenueDashboard";
+import DepositWithdraw from "@/components/DepositWithdraw";
 import Yields from "@/components/Yields";
 import Security from "@/components/Security";
 import FAQ from "@/components/FAQ";
@@ -16,6 +17,7 @@ export default function Home() {
         <Hero />
         <HowItWorks />
         <RevenueDashboard />
+        <DepositWithdraw />
         <Yields />
         <Security />
         <FAQ />
