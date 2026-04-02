@@ -1,57 +1,63 @@
-const protocols = [
-  {
-    name: "Initia Lending",
-    type: "Lending",
-    apy: "24.8%",
-    tvl: "$1.2M",
-    risk: "Low",
-    highlight: true,
-  },
-  {
-    name: "Interwoven DEX",
-    type: "LP",
-    apy: "19.3%",
-    tvl: "$890K",
-    risk: "Medium",
-    highlight: false,
-  },
-  {
-    name: "StakeInit",
-    type: "Staking",
-    apy: "14.5%",
-    tvl: "$2.1M",
-    risk: "Low",
-    highlight: false,
-  },
-  {
-    name: "YieldFarm Alpha",
-    type: "Farming",
-    apy: "31.2%",
-    tvl: "$450K",
-    risk: "High",
-    highlight: false,
-  },
-  {
-    name: "Stable Pool",
-    type: "Stable LP",
-    apy: "8.7%",
-    tvl: "$3.4M",
-    risk: "Low",
-    highlight: false,
-  },
-  {
-    name: "Leverage Vault",
-    type: "Vault",
-    apy: "42.1%",
-    tvl: "$320K",
-    risk: "High",
-    highlight: false,
-  },
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import {
+  scanYieldOpportunities,
+  rankOpportunities,
+  type ScanResult,
+} from "@/lib/strategy-router";
+import type { YieldOpportunity, ProtocolType } from "@/lib/adapters";
+
+const FILTERS: { label: string; type: ProtocolType | "all" }[] = [
+  { label: "All", type: "all" },
+  { label: "Lending", type: "lending" },
+  { label: "LP", type: "lp" },
+  { label: "Enshrined LP", type: "enshrined-lp" },
+  { label: "Staking", type: "staking" },
+  { label: "Farming", type: "farming" },
+  { label: "Vault", type: "vault" },
+  { label: "Stable LP", type: "stable-lp" },
 ];
 
-const filters = ["All", "Lending", "LP", "Staking", "Farming", "Vault"];
+function riskColor(risk: number): string {
+  if (risk <= 3) return "bg-green-100 text-green-700";
+  if (risk <= 6) return "bg-yellow-100 text-yellow-700";
+  return "bg-red-100 text-red-700";
+}
+
+function riskLabel(risk: number): string {
+  if (risk <= 3) return "Low";
+  if (risk <= 6) return "Medium";
+  return "High";
+}
 
 export default function Yields() {
+  const [activeFilter, setActiveFilter] = useState<ProtocolType | "all">("all");
+  const [scan, setScan] = useState<ScanResult | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    scanYieldOpportunities().then((result) => {
+      if (mounted) {
+        setScan(result);
+        setLoading(false);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!scan) return [];
+    const opps =
+      activeFilter === "all"
+        ? scan.opportunities
+        : scan.opportunities.filter((o) => o.type === activeFilter);
+    return rankOpportunities(opps);
+  }, [scan, activeFilter]);
+
   return (
     <section id="yields" className="py-24 bg-white">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-8 lg:px-20">
@@ -77,24 +83,40 @@ export default function Yields() {
 
         {/* Filter Tabs */}
         <div className="bg-neutral-100 p-2 rounded-2xl border border-neutral-200 inline-flex gap-1 mb-8 overflow-x-auto">
-          {filters.map((filter, i) => (
+          {FILTERS.map((filter) => (
             <button
-              key={filter}
+              key={filter.type}
+              onClick={() => setActiveFilter(filter.type)}
               className={`px-6 py-2 rounded-[24px] text-[14px] font-black whitespace-nowrap transition-colors ${
-                i === 0
+                activeFilter === filter.type
                   ? "bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] text-primary-dark"
                   : "text-neutral-500 hover:text-primary-dark"
               }`}
             >
-              {filter}
+              {filter.label}
             </button>
           ))}
         </div>
 
+        {/* Stats bar */}
+        {scan && (
+          <div className="flex flex-wrap gap-6 mb-6 text-[13px] font-bold text-neutral-500">
+            <span>
+              {filtered.length} opportunit{filtered.length === 1 ? "y" : "ies"}
+            </span>
+            <span>•</span>
+            <span>Avg APY: {scan.averageApy}%</span>
+            <span>•</span>
+            <span>
+              Total TVL: ${(scan.totalTvlUsd / 1_000_000).toFixed(1)}M
+            </span>
+          </div>
+        )}
+
         {/* Table */}
         <div className="bg-white rounded-[24px] border border-neutral-200 overflow-hidden">
           {/* Header */}
-          <div className="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-8 py-4 border-b border-neutral-200 bg-neutral-50">
+          <div className="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_0.5fr] gap-4 px-8 py-4 border-b border-neutral-200 bg-neutral-50">
             <span className="text-[12px] font-black uppercase tracking-[-0.6px] text-neutral-400">
               Protocol
             </span>
@@ -107,58 +129,81 @@ export default function Yields() {
             <span className="text-[12px] font-black uppercase tracking-[-0.6px] text-neutral-400">
               Risk
             </span>
+            <span className="text-[12px] font-black uppercase tracking-[-0.6px] text-neutral-400 text-right">
+              Score
+            </span>
           </div>
 
           {/* Rows */}
-          {protocols.map((protocol) => (
-            <div
-              key={protocol.name}
-              className={`grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-8 py-5 border-b border-neutral-200 last:border-b-0 items-center hover:bg-neutral-50 transition-colors ${
-                protocol.highlight ? "bg-accent-green/5" : ""
-              }`}
-            >
-              <div className="flex items-center gap-3">
+          {loading ? (
+            <div className="px-8 py-12 text-center text-neutral-400 font-bold animate-pulse">
+              Scanning protocols...
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="px-8 py-12 text-center text-neutral-400 font-bold">
+              No opportunities found for this filter
+            </div>
+          ) : (
+            filtered.map((score, i) => {
+              const opp = score.opportunity;
+              const isTop = i === 0;
+              return (
                 <div
-                  className={`w-10 h-10 rounded-[12px] flex items-center justify-center text-[14px] font-black ${
-                    protocol.highlight
-                      ? "bg-accent-green text-primary-dark"
-                      : "bg-neutral-100 text-neutral-500"
+                  key={opp.id}
+                  className={`grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_1fr_0.5fr] gap-4 px-8 py-5 border-b border-neutral-200 last:border-b-0 items-center hover:bg-neutral-50 transition-colors ${
+                    isTop ? "bg-accent-green/5" : ""
                   }`}
                 >
-                  {protocol.name.charAt(0)}
-                </div>
-                <div>
-                  <span className="text-[14px] font-black text-primary-dark block">
-                    {protocol.name}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-[12px] flex items-center justify-center text-[14px] font-black ${
+                        isTop
+                          ? "bg-accent-green text-primary-dark"
+                          : "bg-neutral-100 text-neutral-500"
+                      }`}
+                    >
+                      {opp.protocol.charAt(0)}
+                    </div>
+                    <div>
+                      <span className="text-[14px] font-black text-primary-dark block">
+                        {opp.protocol}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] font-bold text-neutral-400">
+                          {opp.type}
+                        </span>
+                        {opp.tags.includes("enshrined") && (
+                          <span className="text-[10px] font-black bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full uppercase">
+                            Initia Native
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-[20px] font-black ${
+                      isTop ? "text-accent-green" : "text-primary-dark"
+                    }`}
+                  >
+                    {opp.apy}%
                   </span>
-                  <span className="text-[12px] font-bold text-neutral-400">
-                    {protocol.type}
+                  <span className="text-[14px] font-bold text-neutral-600">
+                    {opp.tvl}
+                  </span>
+                  <span
+                    className={`text-[12px] font-black uppercase tracking-[-0.6px] px-3 py-1 rounded-full w-fit ${riskColor(
+                      opp.riskScore
+                    )}`}
+                  >
+                    {riskLabel(opp.riskScore)}
+                  </span>
+                  <span className="text-[14px] font-bold text-neutral-400 text-right">
+                    {score.compositeScore.toFixed(1)}
                   </span>
                 </div>
-              </div>
-              <span
-                className={`text-[20px] font-black ${
-                  protocol.highlight ? "text-accent-green" : "text-primary-dark"
-                }`}
-              >
-                {protocol.apy}
-              </span>
-              <span className="text-[14px] font-bold text-neutral-600">
-                {protocol.tvl}
-              </span>
-              <span
-                className={`text-[12px] font-black uppercase tracking-[-0.6px] px-3 py-1 rounded-full w-fit ${
-                  protocol.risk === "Low"
-                    ? "bg-green-100 text-green-700"
-                    : protocol.risk === "Medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-red-100 text-red-700"
-                }`}
-              >
-                {protocol.risk}
-              </span>
-            </div>
-          ))}
+              );
+            })
+          )}
         </div>
 
         {/* CTA */}
