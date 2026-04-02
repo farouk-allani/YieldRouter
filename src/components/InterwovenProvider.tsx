@@ -1,35 +1,41 @@
 "use client";
 
-import { InterwovenKitProvider, TESTNET } from "@initia/interwovenkit-react";
-import "@initia/interwovenkit-react/styles.css";
-import { useEffect } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 
-function StyleInjector() {
-  useEffect(() => {
-    // Ensure InterwovenKit styles are loaded
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap";
-    document.head.appendChild(link);
-  }, []);
-  return null;
+// Mock InterwovenKit context for Vercel preview
+// Real integration uses @initia/interwovenkit-react on Initia testnet
+interface WalletContextType {
+  connected: boolean;
+  address: string | null;
+  connect: () => void;
+  disconnect: () => void;
 }
 
-export default function InterwovenProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const WalletContext = createContext<WalletContextType>({
+  connected: false,
+  address: null,
+  connect: () => {},
+  disconnect: () => {},
+});
+
+export function useInterwovenKit() {
+  return useContext(WalletContext);
+}
+
+export default function InterwovenProvider({ children }: { children: ReactNode }) {
+  const [connected, setConnected] = useState(false);
+  const [address] = useState("init1abc...xyz");
+
   return (
-    <InterwovenKitProvider
-      {...TESTNET}
-      theme="light"
-      enableAutoSign={{
-        "interwoven-1": ["vault.deposit", "vault.withdraw"],
+    <WalletContext.Provider
+      value={{
+        connected,
+        address: connected ? address : null,
+        connect: () => setConnected(true),
+        disconnect: () => setConnected(false),
       }}
     >
-      <StyleInjector />
       {children}
-    </InterwovenKitProvider>
+    </WalletContext.Provider>
   );
 }

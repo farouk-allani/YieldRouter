@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useInterwovenKit } from "@initia/interwovenkit-react";
+import { useInterwovenKit } from "./InterwovenProvider";
 
 // ─── Types ─────────────────────────────────────────────────────────────
 

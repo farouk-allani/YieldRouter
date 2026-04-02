@@ -9,6 +9,8 @@ import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 
+import StrategyAllocation from "@/components/StrategyAllocation";
+
 export default function Home() {
   return (
     <>
@@ -17,6 +19,7 @@ export default function Home() {
         <Hero />
         <HowItWorks />
         <RevenueDashboard />
+        <StrategyAllocation />
         <DepositWithdraw />
         <Yields />
         <Security />

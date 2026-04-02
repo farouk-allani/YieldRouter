@@ -5,10 +5,17 @@ import "forge-std/Script.sol";
 import "../contracts/VaultStrategy.sol";
 import "../contracts/RevenueDistributor.sol";
 import "../contracts/EnshrinedStaker.sol";
+import "../contracts/StrategyRouter.sol";
 
 /**
  * @title DeployYieldRouter
  * @notice Forge deployment script for YieldRouter contracts.
+ *
+ *         Deploys and wires the full YieldRouter system:
+ *         - VaultStrategy: core vault holding user deposits
+ *         - RevenueDistributor: harvests 4 revenue streams
+ *         - EnshrinedStaker: Initia-native enshrined LP staking
+ *         - StrategyRouter: on-chain yield routing engine
  *
  * Usage:
  *   forge script script/DeployYieldRouter.s.sol --rpc-url $RPC --broadcast --verify
@@ -25,7 +32,7 @@ contract DeployYieldRouter is Script {
         // 1. Deploy VaultStrategy
         VaultStrategy vault = new VaultStrategy(
             asset,
-            5,      // maxStrategies
+            10,     // maxStrategies (increased for router)
             500     // performanceFeeBps (5%)
         );
 
@@ -43,7 +50,15 @@ contract DeployYieldRouter is Script {
             1 days // epochDuration
         );
 
-        // 4. Wire contracts together
+        // 4. Deploy StrategyRouter (on-chain routing engine)
+        StrategyRouter router = new StrategyRouter(
+            asset,
+            10,  // maxStrategies
+            5,   // maxAllocations (diversify across top 5)
+            7    // maxRiskScore
+        );
+
+        // 5. Wire contracts together
         vault.setRevenueDistributor(address(distributor));
 
         distributor.setVault(address(vault));
@@ -52,8 +67,20 @@ contract DeployYieldRouter is Script {
         staker.setVault(address(vault));
         staker.setRevenueDistributor(address(distributor));
 
-        // 5. Register staker as revenue source (stream 1 = staking)
+        router.setVault(address(vault));
+        router.setEnshrinedStaker(address(staker));
+        router.setRevenueDistributor(address(distributor));
+
+        // 6. Register staker as revenue source (stream 1 = staking)
         distributor.registerSource(1, address(staker));
+
+        // 7. Register EnshrinedStaker as a strategy in the router
+        router.registerStrategy(
+            address(staker),
+            "Enshrined LP (Initia Native)",
+            StrategyRouter.ProtocolType.EnshrinedLP,
+            2 // risk score: low risk
+        );
 
         vm.stopBroadcast();
 
@@ -61,5 +88,6 @@ contract DeployYieldRouter is Script {
         console.log("VaultStrategy:        ", address(vault));
         console.log("RevenueDistributor:   ", address(distributor));
         console.log("EnshrinedStaker:      ", address(staker));
+        console.log("StrategyRouter:       ", address(router));
     }
 }

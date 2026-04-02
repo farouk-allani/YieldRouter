@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useInterwovenKit } from "@initia/interwovenkit-react";
+import { useInterwovenKit } from "./InterwovenProvider";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
