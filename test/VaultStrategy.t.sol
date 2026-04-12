@@ -84,9 +84,10 @@ contract VaultStrategyTest is Test {
         vault.deposit(amount);
 
         // Should route to strategy 1 (APY 2400 = 24%)
-        VaultStrategy.UserPosition memory pos = vault.positions(alice);
-        assertEq(pos.strategyId, 1);
-        assertEq(vault.strategies(1).totalDeposited, amount);
+        (,, uint256 strategyId) = vault.positions(alice);
+        assertEq(strategyId, 1);
+        (, uint256 totalDeposited,,,) = vault.strategies(1);
+        assertEq(totalDeposited, amount);
     }
 
     function test_deposit_reverts_on_zero() public {
@@ -232,14 +233,16 @@ contract VaultStrategyTest is Test {
         vm.prank(alice);
         vault.deposit(1000e18);
 
-        uint256 strat1Before = vault.strategies(1).totalDeposited;
-        uint256 strat0Before = vault.strategies(0).totalDeposited;
+        (, uint256 strat1Before,,,) = vault.strategies(1);
+        (, uint256 strat0Before,,,) = vault.strategies(0);
 
         vm.prank(owner);
         vault.rebalance(1, 0, 500e18);
 
-        assertEq(vault.strategies(1).totalDeposited, strat1Before - 500e18);
-        assertEq(vault.strategies(0).totalDeposited, strat0Before + 500e18);
+        (, uint256 strat1After,,,) = vault.strategies(1);
+        (, uint256 strat0After,,,) = vault.strategies(0);
+        assertEq(strat1After, strat1Before - 500e18);
+        assertEq(strat0After, strat0Before + 500e18);
     }
 
     function test_rebalance_reverts_inactive_target() public {
@@ -263,11 +266,11 @@ contract VaultStrategyTest is Test {
         vm.prank(distributor);
         vault.reportRevenue(10, 20, 30, 40);
 
-        VaultStrategy.RevenueBreakdown memory rev = vault.cumulativeRevenue();
-        assertEq(rev.vaultYield, 10);
-        assertEq(rev.stakingRewards, 20);
-        assertEq(rev.lpFees, 30);
-        assertEq(rev.revenueShare, 40);
+        (uint256 vy, uint256 sr, uint256 lf, uint256 rs) = vault.cumulativeRevenue();
+        assertEq(vy, 10);
+        assertEq(sr, 20);
+        assertEq(lf, 30);
+        assertEq(rs, 40);
     }
 
     function test_report_revenue_only_distributor() public {

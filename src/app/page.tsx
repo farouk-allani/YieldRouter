@@ -5,6 +5,7 @@ import RevenueDashboard from "@/components/RevenueDashboard";
 import DepositWithdraw from "@/components/DepositWithdraw";
 import Yields from "@/components/Yields";
 import Security from "@/components/Security";
+import Roadmap from "@/components/Roadmap";
 import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
@@ -23,6 +24,7 @@ export default function Home() {
         <DepositWithdraw />
         <Yields />
         <Security />
+        <Roadmap />
         <FAQ />
         <CTA />
       </main>

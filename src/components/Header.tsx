@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useInterwovenKit } from "./InterwovenProvider";
+import { useInterwovenKit } from "@initia/interwovenkit-react";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -44,6 +44,12 @@ export default function Header() {
             className="text-sm font-semibold text-neutral-500 hover:text-primary-dark transition-colors"
           >
             Security
+          </a>
+          <a
+            href="#roadmap"
+            className="text-sm font-semibold text-neutral-500 hover:text-primary-dark transition-colors"
+          >
+            Roadmap
           </a>
           <a
             href="#faq"
@@ -118,6 +124,9 @@ export default function Header() {
             </a>
             <a href="#security" className="font-semibold text-neutral-600">
               Security
+            </a>
+            <a href="#roadmap" className="font-semibold text-neutral-600">
+              Roadmap
             </a>
             <a href="#faq" className="font-semibold text-neutral-600">
               FAQ

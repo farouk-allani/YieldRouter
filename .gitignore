@@ -44,4 +44,4 @@ next-env.d.ts
 /cache/
 /out/
 /broadcast/
-/lib/forge-std/
+/lib/

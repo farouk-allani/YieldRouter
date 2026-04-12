@@ -1,55 +1,55 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { ReactNode, useEffect } from "react";
+import {
+  InterwovenKitProvider,
+  InterwovenKit,
+  injectStyles,
+  TESTNET,
+} from "@initia/interwovenkit-react";
+import interwovenKitStyles from "@initia/interwovenkit-react/styles.js";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider, createConfig, http } from "wagmi";
+import { defineChain } from "viem";
 
-// Mock InterwovenKit context for Vercel preview
-// Real integration uses @initia/interwovenkit-react on Initia testnet
-interface WalletContextType {
-  isConnected: boolean;
-  address: string | null;
-  username: string | null;
-  openConnect: () => void;
-  openWallet: () => void;
-  disconnect: () => void;
-  submitTxBlock: (msgs: unknown[]) => Promise<{ txhash: string }>;
-}
-
-const WalletContext = createContext<WalletContextType>({
-  isConnected: false,
-  address: null,
-  username: null,
-  openConnect: () => {},
-  openWallet: () => {},
-  disconnect: () => {},
-  submitTxBlock: async () => ({ txhash: "" }),
+const initiaEvmTestnet = defineChain({
+  id: 2124225178762456,
+  name: "Initia EVM Testnet",
+  nativeCurrency: { name: "INIT", symbol: "INIT", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://jsonrpc-evm-1.anvil.asia-southeast.initia.xyz"] },
+  },
+  blockExplorers: {
+    default: { name: "Initia Scan", url: "https://scan.testnet.initia.xyz/evm-1" },
+  },
 });
 
-export function useInterwovenKit() {
-  return useContext(WalletContext);
-}
+const wagmiConfig = createConfig({
+  chains: [initiaEvmTestnet],
+  transports: {
+    [initiaEvmTestnet.id]: http(),
+  },
+});
+
+const queryClient = new QueryClient();
 
 export default function InterwovenProvider({ children }: { children: ReactNode }) {
-  const [connected, setConnected] = useState(false);
-
-  const submitTxBlock = useCallback(async (msgs: unknown[]) => {
-    // Mock: simulate tx delay
-    await new Promise((r) => setTimeout(r, 1500));
-    return { txhash: "0x" + Math.random().toString(16).slice(2, 18) };
+  useEffect(() => {
+    injectStyles(interwovenKitStyles);
   }, []);
 
   return (
-    <WalletContext.Provider
-      value={{
-        isConnected: connected,
-        address: connected ? "init1abc...xyz" : null,
-        username: connected ? "farouk.init" : null,
-        openConnect: () => setConnected(true),
-        openWallet: () => setConnected(true),
-        disconnect: () => setConnected(false),
-        submitTxBlock,
-      }}
-    >
-      {children}
-    </WalletContext.Provider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <InterwovenKitProvider
+          {...TESTNET}
+          theme="light"
+          enableAutoSign={true}
+        >
+          {children}
+          <InterwovenKit />
+        </InterwovenKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }

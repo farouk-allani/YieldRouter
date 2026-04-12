@@ -1,142 +1,150 @@
-# YieldRouter 🐍
+# YieldRouter
 
 **Revenue Flywheel Yield Aggregator for Initia**
 
-One deposit → four revenue streams. YieldRouter automatically scans every DeFi protocol on Initia and routes your assets to the highest-yielding opportunities. Vault yield, staking rewards, LP trading fees, and appchain revenue share — all from a single deposit.
+One deposit, four revenue streams. YieldRouter automatically scans every DeFi protocol on Initia and routes your assets to the highest-yielding opportunities. Vault yield, staking rewards, LP trading fees, and appchain revenue share -- all from a single deposit.
 
-## 🏆 INITIATE: The Initia Hackathon (Season 1)
+## INITIATE: The Initia Hackathon (Season 1)
 
-**Track:** DeFi (EVM/Solidity)  
+**Track:** DeFi (EVM/Solidity)
+**Builder:** Farouk Allani ([@farouk-allani](https://github.com/farouk-allani))
 **Deadline:** April 15, 2026
 
 ### Submission Requirements
 - [x] `.initia/submission.json`
 - [x] `README.md`
-- [x] InterwovenKit integration
-- [x] At least one Initia-native feature (Enshrined Liquidity)
-- [ ] Demo video (in progress)
+- [x] InterwovenKit integration (real `@initia/interwovenkit-react` v2.5)
+- [x] Initia-native features: Enshrined Liquidity, Auto-Sign Session, Interwoven Bridge, .init Usernames
+- [ ] Demo video
 
-## The Revenue Flywheel
+## The Problem
+
+DeFi yield is fragmented. Users need to manually research protocols, compare APYs, manage risk, and rebalance positions across multiple platforms. On most chains, you earn from a single source -- lending OR staking OR LP. You never capture the full revenue stack.
+
+**On Initia, this problem has a unique solution.** Initia's architecture enables *four simultaneous revenue streams* from a single deposit -- something no other chain can offer.
+
+## The Solution: The Revenue Flywheel
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  YOUR DEPOSIT                        │
-│                      │                               │
-│         ┌────────────┼────────────┐                  │
-│         ▼            ▼            ▼                  │
-│   ┌──────────┐ ┌──────────┐ ┌──────────┐            │
-│   │  Vault   │ │ Enshrined│ │    LP    │            │
-│   │  Yield   │ │ Staking  │ │   Fees   │            │
-│   │  12.4%   │ │   6.8%   │ │   4.2%   │            │
-│   └────┬─────┘ └────┬─────┘ └────┬─────┘            │
-│        │            │            │                   │
-│        └────────────┼────────────┘                   │
-│                     ▼                                │
-│            ┌──────────────┐                          │
-│            │   Revenue    │                          │
-│            │   Share      │                          │
-│            │    2.4%      │                          │
-│            └──────┬───────┘                          │
-│                   ▼                                  │
-│           25.8% Combined APY                         │
-└─────────────────────────────────────────────────────┘
+                     YOUR DEPOSIT
+                         |
+            +------------+------------+
+            v            v            v
+      +-----------+ +-----------+ +-----------+
+      |  Vault    | | Enshrined | |    LP     |
+      |  Yield    | | Staking   | |   Fees    |
+      |  12.4%    | |   6.8%    | |   4.2%    |
+      +-----+-----+ +-----+-----+ +-----+-----+
+            |            |            |
+            +------------+------------+
+                         v
+                +--------------+
+                |   Revenue    |
+                |   Share      |
+                |    2.4%      |
+                +------+-------+
+                       v
+               25.8% Combined APY
 ```
 
-### Four Revenue Streams
+### Why 4 Streams?
 
 | Stream | Source | Initia Feature |
 |--------|--------|----------------|
-| **Vault Yield** | Best lending/farming strategy via Bridge | Interwoven Bridge |
-| **Staking Rewards** | LP positions staked with validators | Enshrined Liquidity (native) |
+| **Vault Yield** | Best lending/farming strategy | Strategy Router |
+| **Staking Rewards** | LP staked with validators | Enshrined Liquidity (Initia-native) |
 | **LP Trading Fees** | Automated market maker fees | DEX integration |
-| **Revenue Share** | Appchain tx fees recycled to users | Initia revenue sharing |
+| **Revenue Share** | Appchain tx fees recycled | Initia revenue sharing |
+
+**Enshrined Liquidity** is the key differentiator. On other chains, you choose between LP fees OR staking rewards. On Initia, LP positions are staked directly with validators, earning *both* simultaneously. YieldRouter automates this.
 
 ## Architecture
 
-### Smart Contracts (Solidity)
+### Smart Contracts (Solidity 0.8.24)
 
 ```
 contracts/
-├── VaultStrategy.sol        # Core vault: deposit, withdraw, share math, rebalancing
-├── RevenueDistributor.sol   # Harvests 4 revenue streams, distributes to vault
-├── EnshrinedStaker.sol      # Initia Enshrined Liquidity staking (native feature)
++-- VaultStrategy.sol        # Core vault: deposit, withdraw, share math, rebalancing
++-- RevenueDistributor.sol   # Harvests 4 revenue streams, distributes to vault
++-- EnshrinedStaker.sol      # Initia Enshrined Liquidity staking (native feature)
++-- StrategyRouter.sol       # On-chain routing engine (the "brain")
 ```
 
-**VaultStrategy** — The core vault contract. Accepts user deposits, mints shares, routes to the best yield strategy, and compounds revenue from all 4 streams.
+**VaultStrategy** -- Core vault contract. Accepts deposits, mints shares, routes to the best yield strategy, and compounds revenue from all 4 streams.
 
-**RevenueDistributor** — Keeper-driven harvest cycle. Calls each revenue adapter, takes a performance fee, and forwards net revenue to the vault where it compounds.
+**RevenueDistributor** -- Keeper-driven harvest cycle. Calls each revenue adapter, takes a performance fee, and forwards net revenue to the vault.
 
-**EnshrinedStaker** — Initia's unique Enshrined Liquidity feature. LP tokens are staked directly with validators, earning staking rewards on top of LP trading fees. This doubles yield on LP positions — a feature unique to Initia.
+**EnshrinedStaker** -- Initia's unique Enshrined Liquidity feature. LP tokens staked directly with validators for dual yield. This is *only possible on Initia*.
 
-### Strategy Router Engine (TypeScript)
-
-```
-src/lib/
-├── strategy-router.ts  # Core routing algorithm
-├── adapters.ts         # Protocol adapter interfaces
-├── bridge.ts           # Interwoven Bridge integration
-├── init-username.ts    # .init username resolution
-```
-
-The router scores opportunities using a composite algorithm:
+**StrategyRouter** -- The on-chain routing brain. Scores every strategy using a composite algorithm and allocates capital proportionally to the top-N:
 
 ```
-score = (APY × 0.50) + (Risk × 0.30) + (TVL × 0.10) + (Freshness × 0.10)
+compositeScore = (APY x 0.50) + (Risk x 0.30) + (TVL x 0.10) + (Freshness x 0.10)
 ```
 
-Capital is allocated proportionally to the top-N strategies, with an Enshrined LP bonus that always includes Initia's native feature.
-
-### Frontend (Next.js)
+### Frontend (Next.js 16 + TypeScript)
 
 ```
 src/
-├── app/
-│   ├── layout.tsx        # Root layout with InterwovenProvider
-│   ├── page.tsx          # Landing page composition
-│   └── globals.css       # Design system tokens
-├── components/
-│   ├── Header.tsx        # Sticky nav with wallet connect
-│   ├── Hero.tsx          # Landing hero with yield card
-│   ├── HowItWorks.tsx    # 3-step process
-│   ├── RevenueDashboard.tsx  # 4-stream revenue visualization
-│   ├── DepositWithdraw.tsx   # Deposit/withdraw with InterwovenKit
-│   ├── Yields.tsx        # Live protocol scanner with filtering
-│   ├── Security.tsx      # Security features
-│   ├── FAQ.tsx           # FAQ section
-│   ├── CTA.tsx           # Call to action
-│   └── Footer.tsx        # Footer
-├── lib/
-│   ├── strategy-router.ts
-│   ├── adapters.ts
-│   ├── bridge.ts
-│   └── init-username.ts
-└── components/
-    └── InterwovenProvider.tsx  # InterwovenKit provider config
++-- app/
+|   +-- layout.tsx           # Root layout with InterwovenKitProvider
+|   +-- page.tsx             # Landing page
+|   +-- app/page.tsx         # Interactive dashboard
++-- components/
+|   +-- InterwovenProvider   # Real InterwovenKit integration
+|   +-- Header, Hero, HowItWorks, RevenueDashboard, StrategyAllocation,
+|   +-- DepositWithdraw, Yields, Security, Roadmap, FAQ, CTA, Footer
++-- lib/
+    +-- strategy-router.ts   # Client-side routing algorithm
+    +-- adapters.ts          # Protocol adapter interfaces
+    +-- bridge.ts            # Interwoven Bridge integration
+    +-- init-username.ts     # .init username resolution
 ```
 
 ## Initia-Native Features
 
-### 1. Enshrined Liquidity (Unique to Initia)
-LP positions are staked directly with validators, earning staking rewards on top of LP fees. YieldRouter's `EnshrinedStaker.sol` manages this dual-yield mechanism natively.
+### 1. InterwovenKit Integration (Real, Not Mocked)
+Full `@initia/interwovenkit-react` v2.5 integration:
+- `InterwovenKitProvider` with TESTNET config
+- `useInterwovenKit()` for wallet state, `openConnect`, `openWallet`, `disconnect`
+- `openBridge()` and `openDeposit()` for cross-chain deposits
+- `InterwovenKit` floating widget for wallet management
+- `useUsernameQuery()` for .init username resolution
 
-### 2. InterwovenKit Integration
-Native wallet connection, `.init` username display, and auto-signing session UX for seamless deposits/withdrawals without repeated wallet popups.
+### 2. Auto-Sign Session UX
+Real `autoSign.enable()` / `autoSign.disable()` from InterwovenKit:
+- Toggle in dashboard to skip repeated wallet popups
+- Faster transaction flow for routine deposits and withdrawals
+- Visible session status with per-chain tracking
 
-### 3. Interwoven Bridge
-Cross-chain deposits from Ethereum, Noble, Osmosis, and Cosmos Hub directly into the vault.
+### 3. Enshrined Liquidity (Unique to Initia)
+`EnshrinedStaker.sol` manages dual-yield positions:
+- LP tokens staked directly with validators
+- Earn LP trading fees AND staking rewards simultaneously
+- Validator management with epoch-based reward calculation
+- The routing engine always includes Enshrined LP (Initia-native bonus)
 
-### 4. Initia Revenue Sharing
-Appchain transaction fees are recycled back to depositors as the 4th revenue stream.
+### 4. Interwoven Bridge
+Cross-chain deposits from Ethereum, Noble, Osmosis, and Cosmos Hub:
+- Uses InterwovenKit's `openBridge()` for the native bridge UI
+- `openDeposit()` for quick deposits with specific denoms
+- Supported assets: INIT, USDC
+
+### 5. Initia Usernames (.init)
+- `.init` username display throughout the app
+- `validateUsername()` for format validation
+- `formatAddress()` prefers username over raw address
+- `parseRecipient()` identifies username vs address input
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 16 + TypeScript + Tailwind CSS 4 |
-| Smart Contracts | Solidity 0.8.24 (EVM) |
-| Testing | Foundry (forge) |
-| Wallet | InterwovenKit React |
-| Bridge | Interwoven Bridge |
+| Frontend | Next.js 16 + React 19 + TypeScript + Tailwind CSS 4 |
+| Smart Contracts | Solidity 0.8.24 (EVM, Foundry) |
+| Testing | Foundry (forge) -- 60+ unit tests |
+| Wallet | InterwovenKit React v2.5 |
+| Bridge | Interwoven Bridge (via InterwovenKit) |
 | Chain | Initia EVM rollup |
 
 ## Getting Started
@@ -173,7 +181,7 @@ npm run build
 # Compile
 forge build
 
-# Test
+# Test (60+ tests)
 forge test -vvv
 
 # Deploy
@@ -184,18 +192,41 @@ forge script script/DeployYieldRouter.s.sol --rpc-url $RPC --broadcast --verify
 
 ```
 test/
-├── VaultStrategy.t.sol          # 18 tests: deposits, withdrawals, share math, rebalancing
-├── RevenueDistributor.t.sol     # 12 tests: harvest cycles, fees, access control
-├── EnshrinedStaker.t.sol        # 16 tests: staking, rewards, epochs, lifecycle
-└── mocks/
-    ├── MockERC20.sol            # ERC20 test token
-    └── MockRevenueAdapter.sol   # Mock harvest adapter
++-- VaultStrategy.t.sol          # 18 tests: deposits, withdrawals, share math, rebalancing
++-- RevenueDistributor.t.sol     # 12 tests: harvest cycles, fees, access control
++-- EnshrinedStaker.t.sol        # 16 tests: staking, rewards, epochs, lifecycle
++-- StrategyRouter.t.sol         # 20+ tests: scoring, routing, portfolio, rebalancing
++-- mocks/
+    +-- MockERC20.sol            # ERC20 test token
+    +-- MockRevenueAdapter.sol   # Mock harvest adapter
 ```
 
-Run tests:
-```bash
-forge test -vvv
-```
+## Go-To-Market Strategy
+
+### Target Market
+The DeFi yield aggregator market has $2.1B in TVL and is growing 40% year-over-year. Existing aggregators (Yearn, Beefy, Harvest) operate on chains where only single-source yield is possible. YieldRouter captures 4 revenue streams -- a structural advantage unique to Initia.
+
+### Revenue Model
+- **10% performance fee** on harvested yield (industry standard)
+- At $25M TVL with 20% average APY: **$500K+ annual revenue**
+- No token required for revenue -- protocol earns from day one
+
+### Competitive Landscape
+
+| Feature | YieldRouter | Yearn | Beefy |
+|---------|-------------|-------|-------|
+| Revenue streams | 4 | 1 | 1 |
+| Enshrined staking | Yes | No | No |
+| Cross-chain deposits | Yes (Interwoven) | Limited | Limited |
+| On-chain routing | Yes | Off-chain | Off-chain |
+| Revenue share to users | Yes | No | No |
+
+### Roadmap
+
+**Phase 1 (Q2 2026):** Launch on Initia mainnet, onboard 500 depositors, $500K TVL
+**Phase 2 (Q3 2026):** 10+ yield sources, multi-asset vaults, keeper automation, $5M TVL
+**Phase 3 (Q4 2026):** Governance token, DAO strategy whitelisting, institutional vaults, $25M TVL
+**Phase 4 (2027):** Cross-chain yield routing, AI optimization, SDK, mobile app, $100M TVL
 
 ## Design System
 

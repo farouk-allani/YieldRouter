@@ -80,7 +80,7 @@ contract VaultStrategy is Ownable, ReentrancyGuard {
         address _asset,
         uint256 _maxStrategies,
         uint256 _performanceFeeBps
-    ) Ownable(msg.sender) {
+    ) Ownable() {
         require(_asset != address(0), "Vault: zero asset");
         require(_performanceFeeBps <= 2000, "Vault: fee too high"); // max 20%
         asset = IERC20(_asset);

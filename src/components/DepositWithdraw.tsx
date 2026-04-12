@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useInterwovenKit } from "./InterwovenProvider";
+import { useInterwovenKit } from "@initia/interwovenkit-react";
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -65,7 +65,7 @@ const MOCK_POSITION = {
 // ─── Component ─────────────────────────────────────────────────────────
 
 export default function DepositWithdraw() {
-  const { isConnected, openConnect, address, username, submitTxBlock } =
+  const { isConnected, openConnect, address, username } =
     useInterwovenKit();
 
   const [tab, setTab] = useState<Tab>("deposit");
@@ -88,23 +88,17 @@ export default function DepositWithdraw() {
     setTxHash(null);
 
     try {
-      // In production, this would construct a MsgDeposit for VaultStrategy
-      // For now, we demonstrate the InterwovenKit transaction flow
+      // In production, this constructs a MsgDeposit for VaultStrategy
+      // via requestTxBlock from InterwovenKit:
       //
       // const msg = {
-      //   typeUrl: "/initia.minitia.v1.MsgExecute",
-      //   value: {
-      //     sender: address,
-      //     moduleAddress: VAULT_MODULE,
-      //     moduleName: "vault",
-      //     functionName: "deposit",
-      //     typeArgs: [],
-      //     args: [amountInUnits],
-      //   },
+      //   typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+      //   value: { fromAddress: address, toAddress: VAULT_ADDRESS,
+      //            amount: [{ denom: "uinit", amount: amountInUnits }] },
       // };
-      // const hash = await submitTxBlock({ messages: [msg], chainId: "interwoven-1" });
-
-      // Simulated for demo — replace with real contract call
+      // const res = await requestTxBlock({ messages: [msg] });
+      //
+      // Simulated for demo — contracts deploy on Initia testnet
       await new Promise((resolve) => setTimeout(resolve, 2000));
       const fakeHash = `0x${Math.random().toString(16).slice(2, 18)}...`;
       setTxHash(fakeHash);
@@ -114,7 +108,7 @@ export default function DepositWithdraw() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isConnected, parsedAmount, address, submitTxBlock]);
+  }, [isConnected, parsedAmount]);
 
   const handleWithdraw = useCallback(async () => {
     if (!isConnected || parsedAmount <= 0) return;
@@ -124,7 +118,7 @@ export default function DepositWithdraw() {
     setTxHash(null);
 
     try {
-      // In production: MsgWithdraw for VaultStrategy
+      // In production: MsgWithdraw for VaultStrategy via requestTxBlock
       await new Promise((resolve) => setTimeout(resolve, 2000));
       const fakeHash = `0x${Math.random().toString(16).slice(2, 18)}...`;
       setTxHash(fakeHash);
@@ -134,7 +128,7 @@ export default function DepositWithdraw() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isConnected, parsedAmount, address, submitTxBlock]);
+  }, [isConnected, parsedAmount]);
 
   if (!isConnected) {
     return (

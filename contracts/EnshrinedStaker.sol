@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IRevenueAdapter} from "./RevenueDistributor.sol";
 
 /**
  * @title EnshrinedStaker
@@ -82,7 +83,7 @@ contract EnshrinedStaker is Ownable, ReentrancyGuard, IRevenueAdapter {
         address _lpToken,
         address _rewardToken,
         uint256 _epochDuration
-    ) Ownable(msg.sender) {
+    ) Ownable() {
         require(_lpToken != address(0) && _rewardToken != address(0), "Staker: zero addr");
         lpToken = IERC20(_lpToken);
         rewardToken = IERC20(_rewardToken);

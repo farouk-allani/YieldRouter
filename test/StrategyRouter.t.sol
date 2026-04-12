@@ -152,8 +152,8 @@ contract StrategyRouterTest is Test {
 
         // Verify high-risk strategy is not in the allocation
         for (uint256 i = 0; i < preview.length; i++) {
-            StrategyRouter.StrategyInfo memory strat = router.strategies(preview[i].strategyId);
-            assertLe(strat.riskScore, MAX_RISK);
+            (,,,,, uint8 riskScore,,, ) = router.strategies(preview[i].strategyId);
+            assertLe(riskScore, MAX_RISK);
         }
     }
 
@@ -285,7 +285,7 @@ contract StrategyRouterTest is Test {
         vm.prank(owner);
         router.updateStrategyApy(0, 3000);
 
-        (, , , uint256 apy,,,) = router.strategies(0);
+        (,,, uint256 apy,,,,, ) = router.strategies(0);
         assertEq(apy, 3000);
     }
 
@@ -293,7 +293,7 @@ contract StrategyRouterTest is Test {
         vm.prank(owner);
         router.setStrategyActive(0, false);
 
-        (, , , , , , bool active,) = router.strategies(0);
+        (,,,,,, bool active,, ) = router.strategies(0);
         assertFalse(active);
     }
 
@@ -301,7 +301,7 @@ contract StrategyRouterTest is Test {
         vm.prank(owner);
         router.removeStrategy(0);
 
-        (, , , , , , bool active,) = router.strategies(0);
+        (,,,,,, bool active,, ) = router.strategies(0);
         assertFalse(active);
     }
 
@@ -364,7 +364,7 @@ contract StrategyRouterTest is Test {
 
 // ─── Mock Adapter ─────────────────────────────────────────────────────────
 
-contract MockStrategyAdapter is StrategyRouter.IStrategyAdapter {
+contract MockStrategyAdapter is IStrategyAdapter {
     uint256 public apyBps;
     uint256 public tvl;
     uint8 public risk;

@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(forge install:*)",
+      "Bash(forge test:*)",
+      "WebFetch(domain:docs.initia.xyz)",
+      "Bash(wsl -d Ubuntu -e bash -c \"echo 'Ubuntu is running'\")",
+      "Bash(wsl -d Ubuntu -e bash -c \"docker version --format '{{.Client.Version}}' 2>&1\")",
+      "Bash(wsl -d Ubuntu -e bash -c \"dpkg -l jq lz4 2>/dev/null | grep -E '^ii' || echo 'not yet installed'\")",
+      "Bash(wsl -d Ubuntu -- bash -lc \"sudo apt-get update && sudo apt-get install -y jq lz4 curl wget\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"wget -q https://github.com/initia-labs/weave/releases/download/v0.3.9/weave_Linux_x86_64.tar.gz -O /tmp/weave.tar.gz && ls -la /tmp/weave.tar.gz\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"wget https://github.com/initia-labs/weave/releases/download/v0.3.9/weave_Linux_x86_64.tar.gz -O /tmp/weave.tar.gz 2>&1 | tail -5\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"curl -s https://api.github.com/repos/initia-labs/weave/releases/latest | /usr/bin/jq -r '.assets[].name'\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"wget -q https://github.com/initia-labs/weave/releases/download/v0.3.9/weave-0.3.9-linux-amd64.tar.gz -O /tmp/weave.tar.gz && tar -xzf /tmp/weave.tar.gz -C /tmp && ls -la /tmp/weave*\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"mv /tmp/weave /usr/local/bin/weave && chmod +x /usr/local/bin/weave && weave version\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"weave init --help 2>&1\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"weave --help 2>&1\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"weave rollup --help 2>&1\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"weave rollup launch --help 2>&1\")",
+      "Bash(wsl -d Ubuntu -u root -- bash -c \"weave gas-station --help 2>&1\")",
+      "Bash(forge --version)",
+      "Bash(forge build:*)",
+      "Bash(cast wallet:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:faucet.testnet.initia.xyz)",
+      "WebFetch(domain:app.testnet.initia.xyz)",
+      "Bash(curl -s -X POST https://jsonrpc-evm-1.anvil.asia-southeast.initia.xyz -H \"Content-Type: application/json\" -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_chainId\",\"params\":[],\"id\":1}')",
+      "Bash(python -c \"print\\(int\\('0x78bf8b733fcd8', 16\\)\\)\")",
+      "Bash(curl -s -X POST https://jsonrpc-evm-1.anvil.asia-southeast.initia.xyz -H \"Content-Type: application/json\" -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"0x7a59BF56C4f196E89247b73BD2139B77B26644c6\",\"latest\"],\"id\":1}')",
+      "Bash(curl -s -X POST https://evm-rpc.testnet.initia.xyz -H \"Content-Type: application/json\" -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_chainId\",\"params\":[],\"id\":1}')"
+    ]
+  }
+}

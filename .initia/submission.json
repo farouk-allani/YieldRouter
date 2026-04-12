@@ -1,28 +1,43 @@
 {
   "name": "YieldRouter",
-  "description": "DeFi yield aggregator and router on Initia. Automatically finds and routes assets to the highest-yielding opportunities across all Initia protocols.",
+  "description": "Revenue flywheel yield aggregator for Initia. One deposit routes across 4 revenue streams: vault yield, Enshrined LP staking, LP trading fees, and appchain revenue share. On-chain routing engine scores strategies by risk-adjusted APY and allocates capital optimally.",
   "track": "DeFi",
   "team": [
     {
       "name": "Farouk Allani",
       "github": "farouk-allani",
-      "role": "Builder"
+      "role": "Full-Stack Builder"
     }
   ],
   "repository": "https://github.com/farouk-allani/YieldRouter",
   "demoVideo": "",
   "chainId": "",
   "deployedContracts": [],
+  "techStack": {
+    "frontend": "Next.js 16 + React 19 + TypeScript + Tailwind CSS 4",
+    "smartContracts": "Solidity 0.8.24 (Foundry)",
+    "wallet": "InterwovenKit React v2.5",
+    "chain": "Initia EVM Rollup"
+  },
   "features": [
-    "Auto-routing to best yield protocols",
-    "Non-custodial smart contract architecture",
-    "Real-time APY scanning across Initia ecosystem",
-    "Auto-rebalancing when better opportunities appear",
-    "Risk scoring for every protocol"
+    "On-chain strategy routing engine with composite scoring algorithm",
+    "4 simultaneous revenue streams from a single deposit",
+    "Enshrined LP staking for dual yield (LP fees + staking rewards)",
+    "Auto-rebalancing when APY drift exceeds threshold",
+    "Risk-adjusted portfolio optimization with diversification",
+    "Non-custodial smart contract architecture with 60+ unit tests"
   ],
   "initiaNativeFeatures": [
-    "InterwovenKit integration for wallet connection",
-    "Interwoven Bridge for cross-chain deposits",
-    "Initia Usernames (.init) support"
-  ]
+    "InterwovenKit integration for wallet connection and transaction handling",
+    "Auto-Sign Session UX for seamless repeated transactions",
+    "Interwoven Bridge for cross-chain deposits via openBridge/openDeposit",
+    "Initia Usernames (.init) support for human-readable addresses",
+    "Enshrined Liquidity staking (LP + validator staking in one position)"
+  ],
+  "contracts": {
+    "VaultStrategy": "Core vault with ERC20 share tracking, deposit/withdraw, strategy routing, and revenue compounding",
+    "RevenueDistributor": "Keeper-driven harvest cycle across 4 revenue adapters with performance fee",
+    "EnshrinedStaker": "Initia-native Enshrined LP staking with validator management and epoch rewards",
+    "StrategyRouter": "On-chain routing brain — composite scoring, top-N selection, proportional allocation"
+  }
 }

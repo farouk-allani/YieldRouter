@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useInterwovenKit } from "@/components/InterwovenProvider";
+import { useInterwovenKit } from "@initia/interwovenkit-react";
 import {
   routeDeposit,
   type RouteResult,
@@ -49,10 +49,10 @@ const MOCK_TX_HISTORY: TxRecord[] = [
 ];
 
 const CHAIN_OPTIONS = [
-  { name: "Ethereum", icon: "⟠", color: "bg-blue-500" },
-  { name: "Osmosis", icon: "", color: "bg-purple-500" },
-  { name: "Cosmos Hub", icon: "🌌", color: "bg-slate-600" },
-  { name: "Noble", icon: "🔵", color: "bg-blue-400" },
+  { name: "Ethereum", abbr: "E", color: "bg-blue-500" },
+  { name: "Osmosis", abbr: "O", color: "bg-purple-500" },
+  { name: "Cosmos Hub", abbr: "C", color: "bg-slate-600" },
+  { name: "Noble", abbr: "N", color: "bg-blue-400" },
 ];
 
 // ─── Auto-Sign Session Banner ──────────────────────────────────────────
@@ -279,17 +279,7 @@ function AutoSignModal({ onClose, onEnable }: { onClose: () => void; onEnable: (
 // ─── Bridge Flow Panel ─────────────────────────────────────────────────
 
 function BridgePanel({ onClose }: { onClose: () => void }) {
-  const [selectedChain, setSelectedChain] = useState<number | null>(null);
-  const [bridgeAmount, setBridgeAmount] = useState("");
-  const [bridgeStep, setBridgeStep] = useState<"select" | "confirm" | "processing" | "done">("select");
-
-  // Auto-advance from processing to done
-  useEffect(() => {
-    if (bridgeStep === "processing") {
-      const timer = setTimeout(() => setBridgeStep("done"), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [bridgeStep]);
+  const { openBridge, openDeposit } = useInterwovenKit();
 
   return (
     <div className="bg-white border border-neutral-200 rounded-[24px] overflow-hidden">
@@ -302,150 +292,48 @@ function BridgePanel({ onClose }: { onClose: () => void }) {
             <span className="text-neutral-400 text-[12px] font-bold uppercase">Interwoven Bridge</span>
             <h3 className="text-[20px] font-black text-white mt-1">Bridge to Initia</h3>
           </div>
-          <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors">✕</button>
+          <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          </button>
         </div>
       </div>
 
-      <div className="p-6">
-        {bridgeStep === "select" && (
-          <>
-            <label className="text-[12px] font-bold text-neutral-500 uppercase mb-3 block">Source Chain</label>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {CHAIN_OPTIONS.map((chain, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedChain(i)}
-                  className={`p-4 rounded-[16px] border-2 text-left transition-all ${
-                    selectedChain === i
-                      ? "border-accent-green bg-accent-green/5"
-                      : "border-neutral-200 hover:border-neutral-300"
-                  }`}
-                >
-                  <span className="text-2xl mb-1 block">{chain.icon}</span>
-                  <span className="text-[14px] font-black text-primary-dark">{chain.name}</span>
-                </button>
-              ))}
-            </div>
+      <div className="p-6 space-y-4">
+        <p className="text-[14px] text-neutral-600 font-medium">
+          Bridge assets from any supported chain into Initia via the Interwoven Bridge. Funds arrive in ~2 minutes and can be deposited into the vault immediately.
+        </p>
 
-            {selectedChain !== null && (
-              <>
-                <label className="text-[12px] font-bold text-neutral-500 uppercase mb-2 block">Amount</label>
-                <div className="relative mb-4">
-                  <input
-                    type="number"
-                    value={bridgeAmount}
-                    onChange={(e) => setBridgeAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full bg-neutral-50 border-2 border-neutral-200 rounded-[16px] px-5 py-4 text-[20px] font-black text-primary-dark placeholder:text-neutral-300 focus:outline-none focus:border-accent-green transition-colors"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[13px] font-bold text-neutral-500 bg-neutral-100 px-3 py-1.5 rounded-[10px]">
-                    USDC
-                  </span>
+        <div className="bg-neutral-50 rounded-[16px] p-5 space-y-3">
+          <h4 className="text-[12px] font-bold text-neutral-500 uppercase">Supported Source Chains</h4>
+          <div className="grid grid-cols-2 gap-3">
+            {CHAIN_OPTIONS.map((chain, i) => (
+              <div key={i} className="flex items-center gap-3 bg-white rounded-[12px] p-3 border border-neutral-200">
+                <div className={`w-8 h-8 ${chain.color} rounded-full flex items-center justify-center text-white text-sm font-bold`}>
+                  {chain.name.charAt(0)}
                 </div>
-                <div className="bg-neutral-50 rounded-[12px] p-4 mb-4 space-y-2">
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-neutral-500 font-medium">Bridge Fee</span>
-                    <span className="font-bold text-primary-dark">0.1%</span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-neutral-500 font-medium">Estimated Time</span>
-                    <span className="font-bold text-primary-dark">~2 min</span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-neutral-500 font-medium">You Receive</span>
-                    <span className="font-bold text-emerald-600">
-                      {bridgeAmount ? `${(parseFloat(bridgeAmount) * 0.999).toFixed(2)} USDC` : "—"} on Initia
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => bridgeAmount && setBridgeStep("confirm")}
-                  disabled={!bridgeAmount}
-                  className="w-full py-4 rounded-[44px] bg-accent-green text-primary-dark font-black text-[14px] uppercase tracking-wide hover:bg-[#a5ed4b] transition-colors disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed"
-                >
-                  Bridge & Deposit
-                </button>
-              </>
-            )}
-          </>
-        )}
-
-        {bridgeStep === "confirm" && (
-          <div className="text-center py-4">
-            <div className="w-16 h-16 bg-accent-green/10 rounded-full flex items-center justify-center mx-auto mb-4"><svg className="w-8 h-8 text-primary-dark" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg></div>
-            <h4 className="text-[18px] font-black text-primary-dark mb-2">Sign Bridge Transaction</h4>
-            <p className="text-[13px] text-neutral-500 font-medium mb-6">
-              Confirm the bridge transfer in your wallet. This will initiate a cross-chain transfer from {CHAIN_OPTIONS[selectedChain!]?.name} to Initia.
-            </p>
-            <div className="bg-neutral-50 rounded-[12px] p-4 mb-6 text-left space-y-2">
-              <div className="flex justify-between text-[13px]">
-                <span className="text-neutral-500">From</span>
-                <span className="font-bold text-primary-dark">{CHAIN_OPTIONS[selectedChain!]?.name}</span>
+                <span className="text-[13px] font-bold text-primary-dark">{chain.name}</span>
               </div>
-              <div className="flex justify-between text-[13px]">
-                <span className="text-neutral-500">To</span>
-                <span className="font-bold text-primary-dark">Initia</span>
-              </div>
-              <div className="flex justify-between text-[13px]">
-                <span className="text-neutral-500">Amount</span>
-                <span className="font-bold text-primary-dark">{bridgeAmount} USDC</span>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setBridgeStep("select")}
-                className="flex-1 py-3 rounded-[44px] border-2 border-neutral-200 text-[13px] font-bold text-neutral-600 hover:bg-neutral-50 transition-colors"
-              >
-                Back
-              </button>
-              <button
-                onClick={() => setBridgeStep("processing")}
-                className="flex-1 py-3 rounded-[44px] bg-accent-green text-primary-dark text-[13px] font-black uppercase hover:bg-[#a5ed4b] transition-colors"
-              >
-                Confirm
-              </button>
-            </div>
+            ))}
           </div>
-        )}
+        </div>
 
-        {bridgeStep === "processing" && (
-          <div className="text-center py-8">
-            <div className="relative w-20 h-20 mx-auto mb-6">
-              <div className="absolute inset-0 border-4 border-neutral-200 rounded-full" />
-              <div className="absolute inset-0 border-4 border-accent-green rounded-full border-t-transparent animate-spin" />
-              <span className="absolute inset-0 flex items-center justify-center text-2xl">🌉</span>
-            </div>
-            <h4 className="text-[18px] font-black text-primary-dark mb-2">Bridging...</h4>
-            <p className="text-[13px] text-neutral-500 font-medium mb-4">
-              Transferring {bridgeAmount} USDC from {CHAIN_OPTIONS[selectedChain!]?.name}
-            </p>
-            <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-400 font-medium">
-              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-              <span>Waiting for confirmations... ~30s</span>
-            </div>
-          </div>
-        )}
+        <button
+          onClick={() => openBridge()}
+          className="w-full py-4 rounded-[44px] bg-accent-green text-primary-dark font-black text-[14px] uppercase tracking-wide hover:bg-[#a5ed4b] transition-colors"
+        >
+          Open Interwoven Bridge
+        </button>
 
-        {bridgeStep === "done" && (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4"><svg className="w-8 h-8 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg></div>
-            <h4 className="text-[18px] font-black text-primary-dark mb-2">Bridge Complete!</h4>
-            <p className="text-[13px] text-neutral-500 font-medium mb-2">
-              {bridgeAmount} USDC is now on Initia
-            </p>
-            <p className="text-[11px] text-neutral-400 font-mono mb-6">0x8d4b...f167 → Auto-depositing to vault</p>
-            <div className="bg-emerald-50 border border-emerald-200 rounded-[16px] p-4 mb-6">
-              <span className="text-[12px] font-bold text-emerald-700 block">Earning {TOTAL_APY.toFixed(1)}% APY</span>
-              <span className="text-[11px] text-emerald-600">Your funds are now in the YieldRouter vault</span>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-full py-3 rounded-[44px] bg-accent-green text-primary-dark font-black text-[13px] uppercase hover:bg-[#a5ed4b] transition-colors"
-            >
-              View Position
-            </button>
-          </div>
-        )}
+        <button
+          onClick={() => openDeposit({ denoms: ["uinit", "uusdc"] })}
+          className="w-full py-4 rounded-[44px] border-2 border-neutral-200 text-primary-dark font-black text-[14px] uppercase tracking-wide hover:bg-neutral-50 transition-colors"
+        >
+          Quick Deposit (INIT / USDC)
+        </button>
+
+        <p className="text-[11px] text-neutral-400 text-center font-medium">
+          Powered by InterwovenKit — bridge fees are typically 0.1% with ~2 min confirmation
+        </p>
       </div>
     </div>
   );
@@ -461,11 +349,11 @@ function TxHistory() {
     rebalance: "bg-violet-100 text-violet-700",
   };
 
-  const typeIcons: Record<string, string> = {
-    deposit: "📥",
-    withdraw: "📤",
-    harvest: "🌾",
-    rebalance: "",
+  const typeIcons: Record<string, React.ReactNode> = {
+    deposit: <svg className="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v4.59L7.3 9.24a.75.75 0 00-1.1 1.02l3.25 3.5a.75.75 0 001.1 0l3.25-3.5a.75.75 0 10-1.1-1.02l-1.95 2.1V6.75z" clipRule="evenodd" /></svg>,
+    withdraw: <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-4.75a.75.75 0 001.5 0V8.66l1.95 2.1a.75.75 0 101.1-1.02l-3.25-3.5a.75.75 0 00-1.1 0L6.2 9.74a.75.75 0 001.1 1.02l1.95-2.1v4.59z" clipRule="evenodd" /></svg>,
+    harvest: <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" /></svg>,
+    rebalance: <svg className="w-5 h-5 text-violet-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M13.2 2.24a.75.75 0 00.04 1.06l2.1 1.95H6.75a.75.75 0 000 1.5h8.59l-2.1 1.95a.75.75 0 101.02 1.1l3.5-3.25a.75.75 0 000-1.1l-3.5-3.25a.75.75 0 00-1.06.04zm-6.4 8a.75.75 0 00-1.06-.04l-3.5 3.25a.75.75 0 000 1.1l3.5 3.25a.75.75 0 001.02-1.1l-2.1-1.95h8.59a.75.75 0 000-1.5H4.66l2.1-1.95a.75.75 0 00.04-1.06z" clipRule="evenodd" /></svg>,
   };
 
   return (
@@ -502,15 +390,16 @@ function TxHistory() {
 // ─── Main App Page ─────────────────────────────────────────────────────
 
 export default function AppPage() {
-  const { isConnected, openConnect, address, username } = useInterwovenKit();
+  const { isConnected, openConnect, address, username, autoSign: autoSignKit } = useInterwovenKit();
   const [view, setView] = useState<View>("dashboard");
   const [tab, setTab] = useState<Tab>("deposit");
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const [autoSign, setAutoSign] = useState(false);
-  const [showAutoSignModal, setShowAutoSignModal] = useState(false);
   const [route, setRoute] = useState<RouteResult | null>(null);
+
+  // Use real InterwovenKit auto-sign state
+  const autoSignEnabled = Object.values(autoSignKit?.isEnabledByChain ?? {}).some(Boolean);
 
   const parsedAmount = parseFloat(amount) || 0;
   const estimatedDaily = (parsedAmount * TOTAL_APY) / 100 / 365;
@@ -526,26 +415,26 @@ export default function AppPage() {
     setIsSubmitting(true);
     setTxHash(null);
     try {
-      await new Promise((r) => setTimeout(r, autoSign ? 800 : 2000));
+      await new Promise((r) => setTimeout(r, autoSignEnabled ? 800 : 2000));
       setTxHash(`0x${Math.random().toString(16).slice(2, 18)}...`);
       setAmount("");
     } finally {
       setIsSubmitting(false);
     }
-  }, [isConnected, parsedAmount, autoSign]);
+  }, [isConnected, parsedAmount, autoSignEnabled]);
 
   const handleWithdraw = useCallback(async () => {
     if (!isConnected || parsedAmount <= 0) return;
     setIsSubmitting(true);
     setTxHash(null);
     try {
-      await new Promise((r) => setTimeout(r, autoSign ? 800 : 2000));
+      await new Promise((r) => setTimeout(r, autoSignEnabled ? 800 : 2000));
       setTxHash(`0x${Math.random().toString(16).slice(2, 18)}...`);
       setAmount("");
     } finally {
       setIsSubmitting(false);
     }
-  }, [isConnected, parsedAmount, autoSign]);
+  }, [isConnected, parsedAmount, autoSignEnabled]);
 
   if (!isConnected) {
     return (
@@ -574,13 +463,6 @@ export default function AppPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {showAutoSignModal && (
-        <AutoSignModal
-          onClose={() => setShowAutoSignModal(false)}
-          onEnable={() => setAutoSign(true)}
-        />
-      )}
-
       {/* Top Bar */}
       <div className="sticky top-0 z-50 backdrop-blur-[6px] bg-[rgba(255,255,255,0.85)] border-b border-neutral-200">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 flex items-center justify-between h-14">
@@ -661,8 +543,8 @@ export default function AppPage() {
 
             {/* Auto-sign banner */}
             <AutoSignBanner
-              enabled={autoSign}
-              onToggle={() => autoSign ? setAutoSign(false) : setShowAutoSignModal(true)}
+              enabled={autoSignEnabled}
+              onToggle={() => autoSignEnabled ? autoSignKit.disable() : autoSignKit.enable()}
             />
 
             {/* Position Cards Row */}
@@ -804,8 +686,8 @@ export default function AppPage() {
 
               <div className="p-6 sm:p-8">
                 <AutoSignBanner
-                  enabled={autoSign}
-                  onToggle={() => autoSign ? setAutoSign(false) : setShowAutoSignModal(true)}
+                  enabled={autoSignEnabled}
+                  onToggle={() => autoSignEnabled ? autoSignKit.disable() : autoSignKit.enable()}
                 />
 
                 <div className="mt-6 mb-6">
@@ -891,12 +773,12 @@ export default function AppPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      {autoSign ? "Submitting..." : "Awaiting Signature..."}
+                      {autoSignEnabled ? "Submitting..." : "Awaiting Signature..."}
                     </span>
                   ) : tab === "deposit" ? "Deposit & Start Earning" : "Withdraw"}
                 </button>
 
-                {autoSign && parsedAmount > 0 && (
+                {autoSignEnabled && parsedAmount > 0 && (
                   <p className="text-[11px] text-emerald-600 text-center mt-3 font-medium">
                     Auto-sign active — no wallet popup required
                   </p>

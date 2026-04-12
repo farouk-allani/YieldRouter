@@ -30,6 +30,7 @@ contract EnshrinedStakerTest is Test {
     address distributor = makeAddr("distributor");
     address validator1 = makeAddr("validator1");
     address validator2 = makeAddr("validator2");
+    address alice = makeAddr("alice");
 
     uint256 constant EPOCH_DURATION = 1 days;
     uint256 constant STAKE_AMOUNT = 10_000e18;

@@ -6,6 +6,16 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+/// @notice Adapter that each yield strategy implements for on-chain APY queries
+interface IStrategyAdapter {
+    function getCurrentApyBps() external view returns (uint256);
+    function getTvl() external view returns (uint256);
+    function getRiskScore() external view returns (uint8);
+    function deposit(uint256 amount) external returns (uint256);
+    function withdraw(uint256 amount) external returns (uint256);
+    function harvest() external returns (uint256);
+}
+
 /**
  * @title StrategyRouter
  * @notice On-chain yield routing engine for YieldRouter.
@@ -147,18 +157,6 @@ contract StrategyRouter is Ownable, ReentrancyGuard {
     event RevenueDistributorUpdated(address indexed newDistributor);
     event ApyRefreshed(uint256 strategyId, uint256 newApyBps);
 
-    // ─── Interfaces ────────────────────────────────────────────────────────
-
-    /// @notice Adapter that each yield strategy implements for on-chain APY queries
-    interface IStrategyAdapter {
-        function getCurrentApyBps() external view returns (uint256);
-        function getTvl() external view returns (uint256);
-        function getRiskScore() external view returns (uint8);
-        function deposit(uint256 amount) external returns (uint256);
-        function withdraw(uint256 amount) external returns (uint256);
-        function harvest() external returns (uint256);
-    }
-
     // ─── Constructor ───────────────────────────────────────────────────────
 
     constructor(
@@ -166,7 +164,7 @@ contract StrategyRouter is Ownable, ReentrancyGuard {
         uint256 _maxStrategies,
         uint256 _maxAllocations,
         uint256 _maxRiskScore
-    ) Ownable(msg.sender) {
+    ) Ownable() {
         require(_asset != address(0), "Router: zero asset");
         require(_maxAllocations > 0 && _maxAllocations <= 10, "Router: invalid max alloc");
         require(_maxRiskScore <= 10, "Router: invalid max risk");

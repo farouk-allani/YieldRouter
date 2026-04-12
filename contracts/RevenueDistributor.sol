@@ -88,7 +88,7 @@ contract RevenueDistributor is Ownable, ReentrancyGuard {
         address _asset,
         uint256 _harvestInterval,
         uint256 _performanceFeeBps
-    ) Ownable(msg.sender) {
+    ) Ownable() {
         require(_asset != address(0), "Distributor: zero asset");
         require(_performanceFeeBps <= 1000, "Distributor: fee too high"); // max 10%
         asset = IERC20(_asset);
