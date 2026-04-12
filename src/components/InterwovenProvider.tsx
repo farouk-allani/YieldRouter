@@ -47,7 +47,6 @@ export default function InterwovenProvider({ children }: { children: ReactNode }
           enableAutoSign={true}
         >
           {children}
-          <InterwovenKit />
         </InterwovenKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
